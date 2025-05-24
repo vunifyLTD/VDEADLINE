@@ -18,7 +18,7 @@ const Footer: React.FC = () => {
       href: "https://github.com/vunify/vdeadline",
       gradient: "from-blue-500/20 via-indigo-500/20 to-violet-500/20",
       stats: {
-        value: "12.5K",
+        value: "3K+",
         label: "Lines of Code",
         icon: Zap
       }
@@ -29,7 +29,7 @@ const Footer: React.FC = () => {
       href: "https://github.com/vunify/vdeadline/discussions",
       gradient: "from-emerald-500/20 via-teal-500/20 to-cyan-500/20",
       stats: {
-        value: "250+",
+        value: "0",
         label: "Active Users",
         icon: Users
       }
@@ -40,7 +40,7 @@ const Footer: React.FC = () => {
       href: "https://github.com/vunify/vdeadline/pulls",
       gradient: "from-rose-500/20 via-pink-500/20 to-purple-500/20",
       stats: {
-        value: "42",
+        value: "0",
         label: "Pull Requests",
         icon: GitPullRequest
       }

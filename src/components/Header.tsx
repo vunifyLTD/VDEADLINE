@@ -61,7 +61,7 @@ const Header: React.FC = () => {
             <span className="hidden sm:inline text-sm font-medium">Star on GitHub</span>
             <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/10">
               <Star className="w-3 h-3" />
-              <span className="text-xs">180</span>
+              <span className="text-xs">1</span>
             </div>
           </motion.a>
         </div>
