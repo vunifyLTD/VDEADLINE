@@ -1,0 +1,27 @@
+{
+  "name": "Quantum",
+  "color": "quantum",
+  "conferences": [
+    {
+      "id": "quantum-1",
+      "name": "Conference on Quantum Information Processing",
+      "acronym": "QIP",
+      "deadline": "2024-09-10T23:59:59.000Z",
+      "date": "2025-01-20 to 2025-01-24",
+      "location": "Kyoto, Japan",
+      "website": "https://qip2025.org/",
+      "areas": ["Quantum Computing", "Quantum Information"],
+      "description": "Premier conference in quantum information science",
+      "paperSubmission": "2024-09-10",
+      "notificationDate": "2024-11-05",
+      "finalVersion": "2024-12-10",
+      "ranking": "A*",
+      "proceedings": "Springer Quantum",
+      "year": 2025,
+      "cycle": "Fall/Winter",
+      "category": "quantum",
+      "subcategory": "quantum-info",
+      "type": "conference"
+    }
+  ]
+}

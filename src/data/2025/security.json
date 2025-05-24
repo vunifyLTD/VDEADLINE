@@ -1,0 +1,27 @@
+{
+  "name": "Security",
+  "color": "security",
+  "conferences": [
+    {
+      "id": "sec-1",
+      "name": "IEEE Symposium on Security and Privacy",
+      "acronym": "S&P",
+      "deadline": "2024-12-08T23:59:59.000Z",
+      "date": "2025-05-18 to 2025-05-21",
+      "location": "San Francisco, USA",
+      "website": "https://www.ieee-security.org/TC/SP2025/",
+      "areas": ["Security", "Privacy", "Cryptography"],
+      "description": "Top forum for computer security and electronic privacy research",
+      "paperSubmission": "2024-12-08",
+      "notificationDate": "2025-02-15",
+      "finalVersion": "2025-03-15",
+      "ranking": "A*",
+      "proceedings": "IEEE",
+      "year": 2025,
+      "cycle": "Winter/Spring",
+      "category": "security",
+      "subcategory": "sec-systems",
+      "type": "conference"
+    }
+  ]
+}

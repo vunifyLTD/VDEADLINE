@@ -1,0 +1,27 @@
+{
+  "name": "Socio-Tech",
+  "color": "interdisciplinary",
+  "conferences": [
+    {
+      "id": "interdis-1",
+      "name": "ACM Conference on Economics and Computation",
+      "acronym": "EC",
+      "deadline": "2025-02-15T23:59:59.000Z",
+      "date": "2025-07-10 to 2025-07-14",
+      "location": "Copenhagen, Denmark",
+      "website": "https://ec25.acm.org/",
+      "areas": ["Economics and Computation", "Game Theory", "Market Design"],
+      "description": "Premier conference on intersection of economics and computer science",
+      "paperSubmission": "2025-02-15",
+      "notificationDate": "2025-04-30",
+      "finalVersion": "2025-05-31",
+      "ranking": "A",
+      "proceedings": "ACM",
+      "year": 2025,
+      "cycle": "Winter/Summer",
+      "category": "interdisciplinary",
+      "subcategory": "econcomp",
+      "type": "conference"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "Robotics",
+  "color": "robotics",
+  "conferences": [
+    {
+      "id": "robotics-1",
+      "name": "International Conference on Robotics and Automation",
+      "acronym": "ICRA",
+      "deadline": "2024-09-15T23:59:59.000Z",
+      "date": "2025-05-20 to 2025-05-24",
+      "location": "Munich, Germany",
+      "website": "https://icra2025.org/",
+      "areas": ["Robotics", "Automation", "Control Systems"],
+      "description": "Flagship conference of the IEEE Robotics and Automation Society",
+      "paperSubmission": "2024-09-15",
+      "notificationDate": "2025-01-15",
+      "finalVersion": "2025-02-15",
+      "ranking": "A*",
+      "proceedings": "IEEE",
+      "year": 2025,
+      "cycle": "Fall/Spring",
+      "category": "robotics",
+      "subcategory": "robotics-core",
+      "type": "conference"
+    }
+  ]
+}

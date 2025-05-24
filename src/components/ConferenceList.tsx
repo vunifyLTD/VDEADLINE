@@ -1,0 +1,307 @@
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import ConferenceCard from './ConferenceCard';
+import { Conference, AreaData } from '../types';
+import { filterConferences } from '../utils/filterUtils';
+import { FilterState } from '../types';
+import { SearchX, Filter, RefreshCw, Coffee, Brain, Dices, Lightbulb, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+
+interface ConferenceListProps {
+  areasData: AreaData[];
+  filters: FilterState;
+  setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
+}
+
+const ConferenceList: React.FC<ConferenceListProps> = ({ areasData, filters, setFilters }) => {
+  // Combine all submission types from different areas
+  const allSubmissions = areasData.flatMap(area => [
+    ...(area.conferences || []),
+    ...(area.workshops || []),
+    ...(area.journals || []),
+    ...(area.posters || [])
+  ]);
+  
+  // Apply filters
+  const filteredSubmissions = filterConferences(allSubmissions, filters);
+  
+  // Sort submissions by deadline (upcoming first)
+  const sortedSubmissions = [...filteredSubmissions].sort((a, b) => {
+    // Handle "Rolling" deadlines
+    if (a.deadline === 'Rolling') return 1;
+    if (b.deadline === 'Rolling') return -1;
+    
+    const dateA = new Date(a.deadline);
+    const dateB = new Date(b.deadline);
+    return dateA.getTime() - dateB.getTime();
+  });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(sortedSubmissions.length / filters.perPage);
+  const startIndex = (filters.page - 1) * filters.perPage;
+  const paginatedSubmissions = sortedSubmissions.slice(startIndex, startIndex + filters.perPage);
+  const perPageOptions = [5, 10, 25, 50];
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    const halfVisible = Math.floor(maxVisiblePages / 2);
+    
+    let startPage = Math.max(1, filters.page - halfVisible);
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
+  };
+
+  if (sortedSubmissions.length === 0) {
+    const suggestions = [
+      { icon: Coffee, text: "Take a coffee break" },
+      { icon: Brain, text: "Brainstorm new research ideas" },
+      { icon: Dices, text: "Try your luck with different filters" },
+      { icon: Lightbulb, text: "Start your own conference!" },
+    ];
+
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-50"
+      >
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-primary-500/5 to-primary-500/10 
+                      transform -skew-y-6" />
+        
+        <div className="relative px-8 py-12">
+          <div className="max-w-md mx-auto text-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", bounce: 0.5 }}
+              className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-primary-500/10 to-primary-500/20
+                         flex items-center justify-center transform rotate-12"
+            >
+              <SearchX className="h-10 w-10 text-primary-500 transform -rotate-12" />
+            </motion.div>
+            
+            <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-primary-600 to-primary-400 
+                         bg-clip-text text-transparent">
+              {filters.searchQuery 
+                ? "Oops! No matches found" 
+                : "No submissions yet"}
+            </h3>
+            
+            <p className="text-gray-600 mb-8">
+              {filters.searchQuery 
+                ? "Don't worry! Here are some things you can do while we expand our database:" 
+                : "While you wait for submissions to be added, why not:"}
+            </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              {suggestions.map((suggestion, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="p-4 rounded-xl bg-white border border-gray-100 shadow-sm
+                           hover:shadow-md hover:scale-105 transition-all duration-300"
+                >
+                  <suggestion.icon className="h-6 w-6 text-primary-500 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600">{suggestion.text}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              {filters.searchQuery && (
+                <motion.button
+                  onClick={() => filters.searchQuery && window.location.reload()}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium
+                           bg-primary-500 text-white hover:bg-primary-600
+                           transition-all duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  <span>Reset Search</span>
+                </motion.button>
+              )}
+              
+              {filters.subcategories.length > 0 && (
+                <motion.button
+                  onClick={() => filters.subcategories.length && window.location.reload()}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium
+                           bg-white text-primary-600 border border-primary-100
+                           hover:bg-primary-50 transition-all duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Filter className="h-4 w-4" />
+                  <span>Clear Filters</span>
+                </motion.button>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Submission Cards */}
+      <div className="space-y-3">
+        <AnimatePresence mode="popLayout">
+          {paginatedSubmissions.map((submission) => (
+            <motion.div
+              key={submission.id}
+              layout
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{
+                opacity: { duration: 0.2 },
+                scale: { duration: 0.3 },
+                layout: { duration: 0.3 }
+              }}
+            >
+              <ConferenceCard 
+                conference={submission}
+                areaColor={submission.areaColor}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {/* Glassmorphic Pagination Controls */}
+      <div className="relative overflow-hidden rounded-xl border border-white/20 bg-white/60 backdrop-blur-xl">
+        {/* Decorative Elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-br from-primary-500/10 to-transparent rounded-full blur-3xl" />
+          <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-gradient-to-tl from-primary-500/10 to-transparent rounded-full blur-3xl" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] bg-[size:24px_24px]" />
+        </div>
+
+        {/* Content */}
+        <div className="relative p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {/* Entries per page selector */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-600">Show entries:</label>
+                <select
+                  value={filters.perPage}
+                  onChange={(e) => {
+                    const newPerPage = Number(e.target.value);
+                    const newTotalPages = Math.ceil(sortedSubmissions.length / newPerPage);
+                    const newPage = Math.min(filters.page, newTotalPages);
+                    setFilters(prev => ({ ...prev, perPage: newPerPage, page: newPage }));
+                  }}
+                  className="w-20 h-9 rounded-lg bg-white/80 border border-gray-200 text-sm
+                           focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500
+                           transition-all duration-200"
+                >
+                  {perPageOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="text-sm text-gray-500">
+                <span className="hidden sm:inline">Showing </span>
+                <span className="font-medium text-gray-900">
+                  {startIndex + 1} - {Math.min(startIndex + filters.perPage, sortedSubmissions.length)}
+                </span>
+                <span className="mx-1">of</span>
+                <span className="font-medium text-gray-900">{sortedSubmissions.length}</span>
+              </div>
+            </div>
+
+            {/* Page navigation */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center rounded-lg bg-white/40 p-1">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setFilters(prev => ({ ...prev, page: 1 }))}
+                  disabled={filters.page === 1}
+                  className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-white
+                           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
+                           transition-all duration-200"
+                >
+                  <ChevronsLeft className="w-4 h-4" />
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setFilters(prev => ({ ...prev, page: prev.page - 1 }))}
+                  disabled={filters.page === 1}
+                  className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-white
+                           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
+                           transition-all duration-200"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </motion.button>
+
+                <div className="flex items-center gap-1 px-1">
+                  {getPageNumbers().map(pageNum => (
+                    <motion.button
+                      key={pageNum}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setFilters(prev => ({ ...prev, page: pageNum }))}
+                      className={`min-w-[2rem] h-8 px-2 rounded-lg text-sm font-medium
+                               transition-all duration-200 ${
+                                 pageNum === filters.page
+                                   ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-sm'
+                                   : 'text-gray-600 hover:bg-white'
+                               }`}
+                    >
+                      {pageNum}
+                    </motion.button>
+                  ))}
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setFilters(prev => ({ ...prev, page: prev.page + 1 }))}
+                  disabled={filters.page === totalPages}
+                  className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-white
+                           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
+                           transition-all duration-200"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setFilters(prev => ({ ...prev, page: totalPages }))}
+                  disabled={filters.page === totalPages}
+                  className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-white
+                           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
+                           transition-all duration-200"
+                >
+                  <ChevronsRight className="w-4 h-4" />
+                </motion.button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ConferenceList;

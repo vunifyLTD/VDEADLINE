@@ -1,0 +1,27 @@
+{
+  "name": "HCI",
+  "color": "hci",
+  "conferences": [
+    {
+      "id": "hci-1",
+      "name": "ACM Conference on Human Factors in Computing Systems",
+      "acronym": "CHI",
+      "deadline": "2024-09-15T23:59:59.000Z",
+      "date": "2025-04-12 to 2025-04-18",
+      "location": "Paris, France",
+      "website": "https://chi2025.acm.org/",
+      "areas": ["Human-Computer Interaction", "User Experience", "Interactive Design"],
+      "description": "Premier international conference on Human-Computer Interaction",
+      "paperSubmission": "2024-09-15",
+      "notificationDate": "2024-12-10",
+      "finalVersion": "2025-01-15",
+      "ranking": "A*",
+      "proceedings": "ACM",
+      "year": 2025,
+      "cycle": "Fall/Spring",
+      "category": "hci",
+      "subcategory": "hci-user-interface",
+      "type": "conference"
+    }
+  ]
+}

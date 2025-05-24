@@ -1,0 +1,27 @@
+{
+  "name": "Theory",
+  "color": "theory",
+  "conferences": [
+    {
+      "id": "theory-1",
+      "name": "Symposium on Theory of Computing",
+      "acronym": "STOC",
+      "deadline": "2024-11-10T23:59:59.000Z",
+      "date": "2025-06-17 to 2025-06-21",
+      "location": "Chicago, USA",
+      "website": "https://dl.acm.org/conference/stoc",
+      "areas": ["Algorithms", "Complexity Theory"],
+      "description": "Premier conference in theoretical computer science",
+      "paperSubmission": "2024-11-10",
+      "notificationDate": "2025-02-25",
+      "finalVersion": "2025-04-01",
+      "ranking": "A*",
+      "proceedings": "ACM SIGACT",
+      "year": 2025,
+      "cycle": "Fall/Spring",
+      "category": "theory",
+      "subcategory": "theory-algorithms",
+      "type": "conference"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "Bio",
+  "color": "bio",
+  "conferences": [
+    {
+      "id": "bio-1",
+      "name": "International Conference on Research in Computational Molecular Biology",
+      "acronym": "RECOMB",
+      "deadline": "2024-11-01T23:59:59.000Z",
+      "date": "2025-04-05 to 2025-04-08",
+      "location": "Boston, USA",
+      "website": "https://recomb2025.org/",
+      "areas": ["Computational Biology", "Bioinformatics", "Molecular Biology"],
+      "description": "Top conference in computational molecular biology",
+      "paperSubmission": "2024-11-01",
+      "notificationDate": "2025-01-15",
+      "finalVersion": "2025-02-15",
+      "ranking": "A",
+      "proceedings": "Springer",
+      "year": 2025,
+      "cycle": "Fall/Spring",
+      "category": "bio",
+      "subcategory": "bio-genomics",
+      "type": "conference"
+    }
+  ]
+}

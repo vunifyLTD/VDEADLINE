@@ -1,0 +1,27 @@
+{
+  "name": "Data",
+  "color": "data",
+  "conferences": [
+    {
+      "id": "data-1",
+      "name": "International Conference on Very Large Data Bases",
+      "acronym": "VLDB",
+      "deadline": "2025-03-01T23:59:59.000Z",
+      "date": "2025-08-25 to 2025-08-29",
+      "location": "Amsterdam, Netherlands",
+      "website": "https://vldb.org/2025/",
+      "areas": ["Databases", "Data Management", "Big Data"],
+      "description": "Premier international forum for database researchers",
+      "paperSubmission": "2025-03-01",
+      "notificationDate": "2025-05-15",
+      "finalVersion": "2025-06-15",
+      "ranking": "A*",
+      "proceedings": "VLDB Endowment",
+      "year": 2025,
+      "cycle": "Spring/Summer",
+      "category": "data",
+      "subcategory": "data-databases",
+      "type": "conference"
+    }
+  ]
+}

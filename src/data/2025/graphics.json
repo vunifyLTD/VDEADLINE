@@ -1,0 +1,27 @@
+{
+  "name": "Graphics",
+  "color": "graphics",
+  "conferences": [
+    {
+      "id": "gfx-1",
+      "name": "ACM SIGGRAPH Conference",
+      "acronym": "SIGGRAPH",
+      "deadline": "2025-01-23T23:59:59.000Z",
+      "date": "2025-08-10 to 2025-08-14",
+      "location": "Los Angeles, USA",
+      "website": "https://s2025.siggraph.org/",
+      "areas": ["Computer Graphics", "Interactive Techniques", "Digital Art"],
+      "description": "Premier conference for computer graphics and interactive techniques",
+      "paperSubmission": "2025-01-23",
+      "notificationDate": "2025-04-25",
+      "finalVersion": "2025-05-25",
+      "ranking": "A*",
+      "proceedings": "ACM",
+      "year": 2025,
+      "cycle": "Winter/Summer",
+      "category": "graphics",
+      "subcategory": "gfx-graphics",
+      "type": "conference"
+    }
+  ]
+}
