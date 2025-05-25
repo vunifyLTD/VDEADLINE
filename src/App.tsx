@@ -3,6 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import Header from './components/Header';
 import HomePage from './components/home/HomePage';
 import Footer from './components/Footer';
+import ComingSoon from './components/ComingSoon';
 import { CategoryData, FilterState } from './types';
 
 // Import data files
@@ -17,6 +18,8 @@ import softwareData from './data/2025/software.json';
 import { categories } from './data/categories';
 
 function App() {
+  const [isUnlocked, setIsUnlocked] = useState(false);
+
   // Combine all data by type
   const allData = [
     aiData,
@@ -71,6 +74,10 @@ function App() {
     workshops: area.workshops || [],
     journals: area.journals || []
   }));
+
+  if (!isUnlocked) {
+    return <ComingSoon onUnlock={() => setIsUnlocked(true)} />;
+  }
 
   return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900">
