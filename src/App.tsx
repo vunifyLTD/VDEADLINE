@@ -59,7 +59,9 @@ function App() {
     types: [],
     rankings: [],
     page: 1,
-    perPage: 10
+    perPage: 10,
+    sortField: 'deadline',
+    sortOrder: 'asc'
   });
 
   // Combine all data types for each area
@@ -71,17 +73,17 @@ function App() {
   }));
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900">
-      <Header />
-      <HomePage 
-        stats={stats}
-        areasData={areasData}
-        categories={categories}
-        filters={filters}
-        setFilters={setFilters}
-      />
-      <Footer />
-    </div>
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900">
+        <Header />
+        <HomePage
+            stats={stats}
+            areasData={areasData}
+            categories={categories}
+            filters={filters}
+            setFilters={setFilters}
+        />
+        <Footer />
+      </div>
   );
 }
 

@@ -39,6 +39,9 @@ export interface CategoryData {
   subcategories: SubCategory[];
 }
 
+export type SortField = 'deadline' | 'name' | 'location' | 'rank';
+export type SortOrder = 'asc' | 'desc';
+
 export type FilterState = {
   categories: string[];
   subcategories: string[];
@@ -49,4 +52,6 @@ export type FilterState = {
   rankings: string[];
   page: number;
   perPage: number;
+  sortField: SortField;
+  sortOrder: SortOrder;
 };
