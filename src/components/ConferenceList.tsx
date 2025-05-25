@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConferenceCard from './ConferenceCard';
 import { Conference, AreaData, SortField } from '../types';
@@ -13,51 +13,66 @@ interface ConferenceListProps {
 }
 
 const ConferenceList: React.FC<ConferenceListProps> = ({ areasData, filters, setFilters }) => {
-  // Combine all submission types from different areas
-  const allSubmissions = areasData.flatMap(area => [
-    ...(area.conferences || []),
-    ...(area.workshops || []),
-    ...(area.journals || []),
-    ...(area.posters || [])
-  ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [submissions, setSubmissions] = useState<Conference[]>([]);
 
-  // Apply filters
-  const filteredSubmissions = filterConferences(allSubmissions, filters);
+  // Effect to handle filtering and sorting with loading state
+  useEffect(() => {
+    setIsLoading(true);
 
-  // Sort submissions
-  const sortedSubmissions = [...filteredSubmissions].sort((a, b) => {
-    const { sortField, sortOrder } = filters;
-    const multiplier = sortOrder === 'asc' ? 1 : -1;
+    const timer = setTimeout(() => {
+      // Combine all submission types from different areas
+      const allSubmissions = areasData.flatMap(area => [
+        ...(area.conferences || []),
+        ...(area.workshops || []),
+        ...(area.journals || []),
+        ...(area.posters || [])
+      ]);
 
-    switch (sortField) {
-      case 'name':
-        return multiplier * a.acronym.localeCompare(b.acronym);
+      // Apply filters
+      const filteredSubmissions = filterConferences(allSubmissions, filters);
 
-      case 'location':
-        return multiplier * (a.location || '').localeCompare(b.location || '');
+      // Sort submissions
+      const sortedSubmissions = [...filteredSubmissions].sort((a, b) => {
+        const { sortField, sortOrder } = filters;
+        const multiplier = sortOrder === 'asc' ? 1 : -1;
 
-      case 'rank':
-        const rankOrder = { 'A*': 4, 'A': 3, 'B': 2, 'C': 1 };
-        const rankA = rankOrder[a.ranking || 'C'] || 0;
-        const rankB = rankOrder[b.ranking || 'C'] || 0;
-        return multiplier * (rankB - rankA);
+        switch (sortField) {
+          case 'name':
+            return multiplier * a.acronym.localeCompare(b.acronym);
 
-      case 'deadline':
-      default:
-        // Handle "Rolling" deadlines
-        if (a.deadline === 'Rolling') return 1;
-        if (b.deadline === 'Rolling') return -1;
+          case 'location':
+            return multiplier * (a.location || '').localeCompare(b.location || '');
 
-        const dateA = new Date(a.deadline);
-        const dateB = new Date(b.deadline);
-        return multiplier * (dateA.getTime() - dateB.getTime());
-    }
-  });
+          case 'rank':
+            const rankOrder = { 'A*': 4, 'A': 3, 'B': 2, 'C': 1 };
+            const rankA = rankOrder[a.ranking || 'C'] || 0;
+            const rankB = rankOrder[b.ranking || 'C'] || 0;
+            return multiplier * (rankB - rankA);
+
+          case 'deadline':
+          default:
+            // Handle "Rolling" deadlines
+            if (a.deadline === 'Rolling') return 1;
+            if (b.deadline === 'Rolling') return -1;
+
+            const dateA = new Date(a.deadline);
+            const dateB = new Date(b.deadline);
+            return multiplier * (dateA.getTime() - dateB.getTime());
+        }
+      });
+
+      setSubmissions(sortedSubmissions);
+      setIsLoading(false);
+    }, 300); // Add a small delay to make the loading state visible
+
+    return () => clearTimeout(timer);
+  }, [areasData, filters]);
 
   // Calculate pagination
-  const totalPages = Math.ceil(sortedSubmissions.length / filters.perPage);
+  const totalPages = Math.ceil(submissions.length / filters.perPage);
   const startIndex = (filters.page - 1) * filters.perPage;
-  const paginatedSubmissions = sortedSubmissions.slice(startIndex, startIndex + filters.perPage);
+  const paginatedSubmissions = submissions.slice(startIndex, startIndex + filters.perPage);
   const perPageOptions = [5, 10, 25, 50];
 
   const handleSort = (field: SortField) => {
@@ -88,7 +103,61 @@ const ConferenceList: React.FC<ConferenceListProps> = ({ areasData, filters, set
     return pages;
   };
 
-  if (sortedSubmissions.length === 0) {
+  // Loading Skeleton Component
+  const LoadingSkeleton = () => (
+      <div className="space-y-3">
+        {[...Array(filters.perPage)].map((_, index) => (
+            <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+                className="relative flex flex-col sm:flex-row sm:items-start gap-3 p-4
+                   bg-white rounded-xl border border-gray-200
+                   shadow-[0_2px_8px_rgba(0,0,0,0.08)]
+                   overflow-hidden"
+            >
+              {/* Animated gradient background */}
+              <div className="absolute inset-0">
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100
+                         animate-[shimmer_2s_infinite]"
+                     style={{
+                       backgroundSize: '200% 100%',
+                       animation: 'shimmer 2s infinite linear',
+                       '@keyframes shimmer': {
+                         '0%': { backgroundPosition: '200% 0' },
+                         '100%': { backgroundPosition: '-200% 0' }
+                       }
+                     }}/>
+              </div>
+
+              {/* Content skeleton */}
+              <div className="relative flex-shrink-0 w-full sm:w-48">
+                <div className="h-6 w-24 bg-gray-200 rounded mb-2" />
+                <div className="h-4 w-16 bg-gray-200 rounded mb-2" />
+                <div className="h-4 w-20 bg-gray-200 rounded" />
+              </div>
+
+              <div className="relative flex-1 min-w-0">
+                <div className="h-5 w-3/4 bg-gray-200 rounded mb-3" />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="h-4 w-32 bg-gray-200 rounded" />
+                  <div className="h-4 w-32 bg-gray-200 rounded" />
+                  <div className="h-4 w-32 bg-gray-200 rounded" />
+                </div>
+              </div>
+
+              <div className="relative flex flex-col gap-2 sm:ml-2">
+                <div className="h-8 w-8 bg-gray-200 rounded-lg" />
+                <div className="h-8 w-8 bg-gray-200 rounded-lg" />
+                <div className="h-8 w-8 bg-gray-200 rounded-lg" />
+              </div>
+            </motion.div>
+        ))}
+      </div>
+  );
+
+  if (submissions.length === 0 && !isLoading) {
     const suggestions = [
       { icon: Coffee, text: "Take a coffee break" },
       { icon: Brain, text: "Brainstorm new research ideas" },
@@ -251,29 +320,35 @@ const ConferenceList: React.FC<ConferenceListProps> = ({ areasData, filters, set
         </div>
 
         {/* Submission Cards */}
-        <div className="space-y-3">
-          <AnimatePresence mode="popLayout">
-            {paginatedSubmissions.map((submission) => (
-                <motion.div
-                    key={submission.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{
-                      opacity: { duration: 0.2 },
-                      scale: { duration: 0.3 },
-                      layout: { duration: 0.3 }
-                    }}
-                >
-                  <ConferenceCard
-                      conference={submission}
-                      areaColor={submission.areaColor}
-                  />
-                </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+        <AnimatePresence mode="wait">
+          {isLoading ? (
+              <LoadingSkeleton />
+          ) : (
+              <div className="space-y-3">
+                <AnimatePresence mode="popLayout">
+                  {paginatedSubmissions.map((submission) => (
+                      <motion.div
+                          key={submission.id}
+                          layout
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{
+                            opacity: { duration: 0.2 },
+                            scale: { duration: 0.3 },
+                            layout: { duration: 0.3 }
+                          }}
+                      >
+                        <ConferenceCard
+                            conference={submission}
+                            areaColor={submission.areaColor}
+                        />
+                      </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+          )}
+        </AnimatePresence>
 
         {/* Glassmorphic Pagination Controls */}
         <div className="relative overflow-hidden rounded-xl border border-white/20 bg-white/60 backdrop-blur-xl">
@@ -295,7 +370,7 @@ const ConferenceList: React.FC<ConferenceListProps> = ({ areasData, filters, set
                       value={filters.perPage}
                       onChange={(e) => {
                         const newPerPage = Number(e.target.value);
-                        const newTotalPages = Math.ceil(sortedSubmissions.length / newPerPage);
+                        const newTotalPages = Math.ceil(submissions.length / newPerPage);
                         const newPage = Math.min(filters.page, newTotalPages);
                         setFilters(prev => ({ ...prev, perPage: newPerPage, page: newPage }));
                       }}
@@ -312,10 +387,10 @@ const ConferenceList: React.FC<ConferenceListProps> = ({ areasData, filters, set
                 <div className="text-sm text-gray-500">
                   <span className="hidden sm:inline">Showing </span>
                   <span className="font-medium text-gray-900">
-                  {startIndex + 1} - {Math.min(startIndex + filters.perPage, sortedSubmissions.length)}
+                  {startIndex + 1} - {Math.min(startIndex + filters.perPage, submissions.length)}
                 </span>
                   <span className="mx-1">of</span>
-                  <span className="font-medium text-gray-900">{sortedSubmissions.length}</span>
+                  <span className="font-medium text-gray-900">{submissions.length}</span>
                 </div>
               </div>
 
