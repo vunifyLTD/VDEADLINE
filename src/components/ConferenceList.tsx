@@ -1,18 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConferenceCard from './ConferenceCard';
 import { Conference, AreaData, SortField } from '../types';
 import { filterConferences } from '../utils/filterUtils';
 import { FilterState } from '../types';
-import { SearchX, Filter, RefreshCw, Coffee, Brain, Dices, Lightbulb, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Clock } from 'lucide-react';
+import { SearchX, Filter, RefreshCw, Coffee, Brain, Dices, Lightbulb, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Clock, X } from 'lucide-react';
 
 interface ConferenceListProps {
   areasData: AreaData[];
   filters: FilterState;
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
+  selectedConference: string | null;
+  onClearSelection: () => void;
 }
 
-const ConferenceList: React.FC<ConferenceListProps> = ({ areasData, filters, setFilters }) => {
+const ConferenceList: React.FC<ConferenceListProps> = ({
+                                                         areasData,
+                                                         filters,
+                                                         setFilters,
+                                                         selectedConference,
+                                                         onClearSelection
+                                                       }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [submissions, setSubmissions] = useState<Conference[]>([]);
 
@@ -22,18 +30,23 @@ const ConferenceList: React.FC<ConferenceListProps> = ({ areasData, filters, set
 
     const timer = setTimeout(() => {
       // Combine all submission types from different areas
-      const allSubmissions = areasData.flatMap(area => [
+      let allSubmissions = areasData.flatMap(area => [
         ...(area.conferences || []),
         ...(area.workshops || []),
         ...(area.journals || []),
         ...(area.posters || [])
       ]);
 
-      // Apply filters
-      const filteredSubmissions = filterConferences(allSubmissions, filters);
+      // If there's a selected conference, only show that one
+      if (selectedConference) {
+        allSubmissions = allSubmissions.filter(sub => sub.id === selectedConference);
+      } else {
+        // Apply filters only if no conference is selected
+        allSubmissions = filterConferences(allSubmissions, filters);
+      }
 
       // Sort submissions
-      const sortedSubmissions = [...filteredSubmissions].sort((a, b) => {
+      const sortedSubmissions = [...allSubmissions].sort((a, b) => {
         const { sortField, sortOrder } = filters;
         const multiplier = sortOrder === 'asc' ? 1 : -1;
 
@@ -64,10 +77,10 @@ const ConferenceList: React.FC<ConferenceListProps> = ({ areasData, filters, set
 
       setSubmissions(sortedSubmissions);
       setIsLoading(false);
-    }, 300); // Add a small delay to make the loading state visible
+    }, 300);
 
     return () => clearTimeout(timer);
-  }, [areasData, filters]);
+  }, [areasData, filters, selectedConference]);
 
   // Calculate pagination
   const totalPages = Math.ceil(submissions.length / filters.perPage);
@@ -292,29 +305,45 @@ const ConferenceList: React.FC<ConferenceListProps> = ({ areasData, filters, set
                 ))}
               </div>
 
-              <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setFilters(prev => ({ ...prev, upcoming: !prev.upcoming }))}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium
-                       transition-all duration-200 ${
-                      filters.upcoming
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-white text-gray-600'
-                  }`}
-              >
-                <Clock className="w-4 h-4" />
-                <span>Active Calls</span>
-                <div className={`relative ml-2 w-8 h-4 rounded-full ${
-                    filters.upcoming ? 'bg-emerald-400' : 'bg-gray-200'
-                }`}>
-                  <motion.div
-                      animate={{ x: filters.upcoming ? 16 : 2 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm`}
-                  />
-                </div>
-              </motion.button>
+              <div className="flex items-center gap-2">
+                {selectedConference && (
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={onClearSelection}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium
+                           bg-rose-500 text-white hover:bg-rose-600
+                           transition-all duration-200"
+                    >
+                      <X className="w-4 h-4" />
+                      <span>Clear Selection</span>
+                    </motion.button>
+                )}
+
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setFilters(prev => ({ ...prev, upcoming: !prev.upcoming }))}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium
+                         transition-all duration-200 ${
+                        filters.upcoming
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-white text-gray-600'
+                    }`}
+                >
+                  <Clock className="w-4 h-4" />
+                  <span>Active Calls</span>
+                  <div className={`relative ml-2 w-8 h-4 rounded-full ${
+                      filters.upcoming ? 'bg-emerald-400' : 'bg-gray-200'
+                  }`}>
+                    <motion.div
+                        animate={{ x: filters.upcoming ? 16 : 2 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm`}
+                    />
+                  </div>
+                </motion.button>
+              </div>
             </div>
           </div>
         </div>
@@ -351,123 +380,125 @@ const ConferenceList: React.FC<ConferenceListProps> = ({ areasData, filters, set
         </AnimatePresence>
 
         {/* Glassmorphic Pagination Controls */}
-        <div className="relative overflow-hidden rounded-xl border border-white/20 bg-white/60 backdrop-blur-xl">
-          {/* Decorative Elements */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-br from-primary-500/10 to-transparent rounded-full blur-3xl" />
-            <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-gradient-to-tl from-primary-500/10 to-transparent rounded-full blur-3xl" />
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] bg-[size:24px_24px]" />
-          </div>
-
-          {/* Content */}
-          <div className="relative p-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              {/* Entries per page selector */}
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm text-gray-600">Show entries:</label>
-                  <select
-                      value={filters.perPage}
-                      onChange={(e) => {
-                        const newPerPage = Number(e.target.value);
-                        const newTotalPages = Math.ceil(submissions.length / newPerPage);
-                        const newPage = Math.min(filters.page, newTotalPages);
-                        setFilters(prev => ({ ...prev, perPage: newPerPage, page: newPage }));
-                      }}
-                      className="w-20 h-9 rounded-lg bg-white/80 border border-gray-200 text-sm
-                           focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500
-                           transition-all duration-200"
-                  >
-                    {perPageOptions.map(option => (
-                        <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="text-sm text-gray-500">
-                  <span className="hidden sm:inline">Showing </span>
-                  <span className="font-medium text-gray-900">
-                  {startIndex + 1} - {Math.min(startIndex + filters.perPage, submissions.length)}
-                </span>
-                  <span className="mx-1">of</span>
-                  <span className="font-medium text-gray-900">{submissions.length}</span>
-                </div>
+        {!selectedConference && (
+            <div className="relative overflow-hidden rounded-xl border border-white/20 bg-white/60 backdrop-blur-xl">
+              {/* Decorative Elements */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-br from-primary-500/10 to-transparent rounded-full blur-3xl" />
+                <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-gradient-to-tl from-primary-500/10 to-transparent rounded-full blur-3xl" />
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] bg-[size:24px_24px]" />
               </div>
 
-              {/* Page navigation */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center rounded-lg bg-white/40 p-1">
-                  <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setFilters(prev => ({ ...prev, page: 1 }))}
-                      disabled={filters.page === 1}
-                      className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-white
-                           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
-                           transition-all duration-200"
-                  >
-                    <ChevronsLeft className="w-4 h-4" />
-                  </motion.button>
+              {/* Content */}
+              <div className="relative p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  {/* Entries per page selector */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm text-gray-600">Show entries:</label>
+                      <select
+                          value={filters.perPage}
+                          onChange={(e) => {
+                            const newPerPage = Number(e.target.value);
+                            const newTotalPages = Math.ceil(submissions.length / newPerPage);
+                            const newPage = Math.min(filters.page, newTotalPages);
+                            setFilters(prev => ({ ...prev, perPage: newPerPage, page: newPage }));
+                          }}
+                          className="w-20 h-9 rounded-lg bg-white/80 border border-gray-200 text-sm
+                             focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500
+                             transition-all duration-200"
+                      >
+                        {perPageOptions.map(option => (
+                            <option key={option} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </div>
 
-                  <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setFilters(prev => ({ ...prev, page: prev.page - 1 }))}
-                      disabled={filters.page === 1}
-                      className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-white
-                           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
-                           transition-all duration-200"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </motion.button>
-
-                  <div className="flex items-center gap-1 px-1">
-                    {getPageNumbers().map(pageNum => (
-                        <motion.button
-                            key={pageNum}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setFilters(prev => ({ ...prev, page: pageNum }))}
-                            className={`min-w-[2rem] h-8 px-2 rounded-lg text-sm font-medium
-                               transition-all duration-200 ${
-                                pageNum === filters.page
-                                    ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-sm'
-                                    : 'text-gray-600 hover:bg-white'
-                            }`}
-                        >
-                          {pageNum}
-                        </motion.button>
-                    ))}
+                    <div className="text-sm text-gray-500">
+                      <span className="hidden sm:inline">Showing </span>
+                      <span className="font-medium text-gray-900">
+                    {startIndex + 1} - {Math.min(startIndex + filters.perPage, submissions.length)}
+                  </span>
+                      <span className="mx-1">of</span>
+                      <span className="font-medium text-gray-900">{submissions.length}</span>
+                    </div>
                   </div>
 
-                  <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setFilters(prev => ({ ...prev, page: prev.page + 1 }))}
-                      disabled={filters.page === totalPages}
-                      className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-white
-                           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
-                           transition-all duration-200"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </motion.button>
+                  {/* Page navigation */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center rounded-lg bg-white/40 p-1">
+                      <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setFilters(prev => ({ ...prev, page: 1 }))}
+                          disabled={filters.page === 1}
+                          className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-white
+                             disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
+                             transition-all duration-200"
+                      >
+                        <ChevronsLeft className="w-4 h-4" />
+                      </motion.button>
 
-                  <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setFilters(prev => ({ ...prev, page: totalPages }))}
-                      disabled={filters.page === totalPages}
-                      className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-white
-                           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
-                           transition-all duration-200"
-                  >
-                    <ChevronsRight className="w-4 h-4" />
-                  </motion.button>
+                      <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setFilters(prev => ({ ...prev, page: prev.page - 1 }))}
+                          disabled={filters.page === 1}
+                          className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-white
+                             disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
+                             transition-all duration-200"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </motion.button>
+
+                      <div className="flex items-center gap-1 px-1">
+                        {getPageNumbers().map(pageNum => (
+                            <motion.button
+                                key={pageNum}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setFilters(prev => ({ ...prev, page: pageNum }))}
+                                className={`min-w-[2rem] h-8 px-2 rounded-lg text-sm font-medium
+                                 transition-all duration-200 ${
+                                    pageNum === filters.page
+                                        ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-sm'
+                                        : 'text-gray-600 hover:bg-white'
+                                }`}
+                            >
+                              {pageNum}
+                            </motion.button>
+                        ))}
+                      </div>
+
+                      <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setFilters(prev => ({ ...prev, page: prev.page + 1 }))}
+                          disabled={filters.page === totalPages}
+                          className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-white
+                             disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
+                             transition-all duration-200"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </motion.button>
+
+                      <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setFilters(prev => ({ ...prev, page: totalPages }))}
+                          disabled={filters.page === totalPages}
+                          className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-white
+                             disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent
+                             transition-all duration-200"
+                      >
+                        <ChevronsRight className="w-4 h-4" />
+                      </motion.button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+        )}
       </div>
   );
 };

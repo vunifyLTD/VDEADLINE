@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { formatDeadline, formatDateRange, getDeadlineStatus } from '../utils/dateUtils';
 import { Conference } from '../types';
-import { Calendar, Globe, Star, CalendarPlus, Link as LinkIcon, Share2, Clock, CalendarDays, CalendarCheck, CalendarX, BookOpen, MapPin, Tag, Twitter, Linkedin, Facebook, Copy, Check, FileText } from 'lucide-react';
+import { Calendar, Globe, Star, CalendarPlus, Link as LinkIcon, Share2, Clock, CalendarDays, CalendarCheck, CalendarX, BookOpen, MapPin, Tag, Twitter, Linkedin, Facebook, Copy, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as Tooltip from '@radix-ui/react-tooltip';
 
@@ -144,8 +144,8 @@ END:VCALENDAR`;
   };
 
   const copyToClipboard = async () => {
-    const text = `${conference.acronym} - ${conference.name}\nDeadline: ${conference.deadline}\nWebsite: ${conference.website}`;
-    await navigator.clipboard.writeText(text);
+    const url = `${window.location.origin}/?conference=${conference.id}`;
+    await navigator.clipboard.writeText(url);
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
   };
@@ -153,7 +153,7 @@ END:VCALENDAR`;
   return (
       <motion.div
           className="group relative flex flex-col sm:flex-row sm:items-start gap-3 p-4
-                 bg-white rounded-xl border border-gray-200
+                 rounded-xl border border-gray-200
                  shadow-[0_2px_8px_rgba(0,0,0,0.08)]
                  hover:shadow-[0_4px_16px_rgba(0,0,0,0.16)]
                  transition-all duration-300 ease-out
@@ -166,9 +166,21 @@ END:VCALENDAR`;
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
       >
-        {/* Conference acronym and basic info */}
-        <div className="flex-shrink-0 w-full sm:w-48">
-          <h3 className="text-lg font-mono font-bold tracking-tight text-gray-900">
+        {/* Decorative Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white to-gray-50/80" />
+
+        {/* Network Pattern Background */}
+        <div className="absolute inset-0 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-300">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#000_1px,transparent_1px)] bg-[length:20px_20px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#000_1px,transparent_1px)] bg-[length:30px_30px] rotate-15" />
+        </div>
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Content */}
+        <div className="relative flex-shrink-0 w-full sm:w-48">
+          <h3 className="text-lg font-mono font-bold tracking-tight text-gray-900 group-hover:text-primary-600 transition-colors duration-300">
             {conference.acronym}
           </h3>
 
@@ -187,28 +199,32 @@ END:VCALENDAR`;
 
           <div className="mt-2 flex flex-wrap gap-1.5">
             {conference.ranking && (
-                <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg border
-                          ${getRankingColor(conference.ranking)}`}>
+                <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg border
+                       ${getRankingColor(conference.ranking)}`}
+                >
                   <Star className="h-3.5 w-3.5" />
                   <span className="text-xs font-bold">{conference.ranking}</span>
-                </div>
+                </motion.div>
             )}
 
-            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg border
-                        ${getTypeColor(conference.type)}`}>
-              <FileText className="h-3.5 w-3.5" />
+            <motion.div
+                whileHover={{ scale: 1.05 }}
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg border
+                     ${getTypeColor(conference.type)}`}
+            >
+              <LinkIcon className="h-3.5 w-3.5" />
               <span className="text-xs font-medium capitalize">{conference.type}</span>
-            </div>
+            </motion.div>
           </div>
         </div>
 
-        {/* Conference details */}
-        <div className="flex-1 min-w-0 pl-0 sm:pl-2">
-          <h4 className="text-sm font-medium text-gray-600 mb-1.5">
+        <div className="relative flex-1 min-w-0 pl-0 sm:pl-2">
+          <h4 className="text-sm font-medium text-gray-600 mb-1.5 group-hover:text-gray-900 transition-colors duration-300">
             {conference.name}
           </h4>
 
-          {/* Important Dates */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-3">
             {conference.paperSubmission && (
                 <div className="flex items-center gap-1.5 text-xs">
@@ -241,7 +257,6 @@ END:VCALENDAR`;
             )}
           </div>
 
-          {/* Conference Info */}
           <div className="mt-1.5 grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-3 text-xs text-gray-500">
             {conference.date && (
                 <div className="flex items-center gap-1.5">
@@ -266,21 +281,22 @@ END:VCALENDAR`;
           {Array.isArray(conference.areas) && conference.areas.length > 0 && (
               <div className="mt-1.5 flex flex-wrap gap-1">
                 {conference.areas.map((area, index) => (
-                    <div
+                    <motion.div
                         key={index}
+                        whileHover={{ scale: 1.05 }}
                         className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded
-                         bg-gray-50 text-gray-600"
+                         bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors duration-200"
                     >
                       <Tag className="h-2.5 w-2.5 text-gray-400" />
                       {area}
-                    </div>
+                    </motion.div>
                 ))}
               </div>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col gap-1 sm:ml-2">
+        <div className="relative flex flex-col gap-1 sm:ml-2">
           {/* Calendar Dropdown */}
           {conference.deadline && conference.deadline !== 'Rolling' && (
               <div className="relative calendar-dropdown">
@@ -305,7 +321,8 @@ END:VCALENDAR`;
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
                           className="absolute right-0 mt-2 w-48 rounded-xl bg-white shadow-lg
-                           border border-gray-200 py-1 z-50 overflow-hidden"
+                           border border-gray-200 py-1 z-50"
+                          style={{ position: 'absolute', top: '100%' }}
                       >
                         {[
                           { name: 'Google Calendar', type: 'google' },
@@ -357,7 +374,8 @@ END:VCALENDAR`;
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       className="absolute right-0 mt-2 w-48 rounded-xl bg-white shadow-lg
-                         border border-gray-200 py-1 z-50 overflow-hidden"
+                         border border-gray-200 py-1 z-50"
+                      style={{ position: 'absolute', top: '100%' }}
                   >
                     {[
                       { name: 'Twitter', icon: Twitter, type: 'twitter', color: 'hover:text-sky-500' },
@@ -403,7 +421,9 @@ END:VCALENDAR`;
                   </Tooltip.Trigger>
                   <Tooltip.Portal>
                     <Tooltip.Content
-                        className="bg-black/90 text-white px-2 py-1 rounded text-xs"
+                        className="bg-black/90 text-white px-2 py-1 rounded text-xs
+                           shadow-lg backdrop-blur-sm border border-white/10"
+                        side="top"
                         sideOffset={5}
                     >
                       Visit Website

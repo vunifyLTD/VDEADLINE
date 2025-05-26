@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Header from './components/Header';
 import HomePage from './components/home/HomePage';
 import Footer from './components/Footer';
@@ -19,6 +19,8 @@ import { categories } from './data/categories';
 
 function App() {
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedConference = searchParams.get('conference');
 
   // Combine all data by type
   const allData = [
@@ -88,6 +90,8 @@ function App() {
             categories={categories}
             filters={filters}
             setFilters={setFilters}
+            selectedConference={selectedConference}
+            onClearSelection={() => setSearchParams({})}
         />
         <Footer />
       </div>
