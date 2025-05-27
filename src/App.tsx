@@ -15,6 +15,9 @@ import theoryData from './data/2025/theory.json';
 import softwareData from './data/2025/software.json';
 import hciData from './data/2025/hci.json';
 import dataData from './data/2025/data.json';
+import graphicsData from './data/2025/graphics.json';
+import bioData from './data/2025/bio.json';
+import roboticsData from './data/2025/robotics.json';
 
 // Import categories data
 import { categories } from './data/categories';
@@ -33,7 +36,10 @@ function App() {
     theoryData,
     softwareData,
     hciData,
-    dataData
+    dataData,
+    graphicsData,
+    bioData,
+    roboticsData
   ];
 
   // Separate submissions by type

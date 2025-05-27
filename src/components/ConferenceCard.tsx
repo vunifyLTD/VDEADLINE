@@ -186,7 +186,7 @@ END:VCALENDAR`;
 
           {conference.cycle && (
               <div className="mt-0.5 text-xs font-medium text-gray-500">
-                {conference.cycle} {conference.year}
+                {conference.cycle}
               </div>
           )}
 
