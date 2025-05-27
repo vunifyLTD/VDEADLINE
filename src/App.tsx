@@ -14,6 +14,7 @@ import quantumData from './data/2025/quantum.json';
 import theoryData from './data/2025/theory.json';
 import softwareData from './data/2025/software.json';
 import hciData from './data/2025/hci.json';
+import dataData from './data/2025/data.json';
 
 // Import categories data
 import { categories } from './data/categories';
@@ -31,7 +32,8 @@ function App() {
     quantumData,
     theoryData,
     softwareData,
-    hciData
+    hciData,
+    dataData
   ];
 
   // Separate submissions by type
