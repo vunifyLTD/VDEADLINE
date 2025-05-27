@@ -13,12 +13,13 @@ import securityData from './data/2025/security.json';
 import quantumData from './data/2025/quantum.json';
 import theoryData from './data/2025/theory.json';
 import softwareData from './data/2025/software.json';
+import hciData from './data/2025/hci.json';
 
 // Import categories data
 import { categories } from './data/categories';
 
 function App() {
-  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedConference = searchParams.get('conference');
 
@@ -29,7 +30,8 @@ function App() {
     securityData,
     quantumData,
     theoryData,
-    softwareData
+    softwareData,
+    hciData
   ];
 
   // Separate submissions by type

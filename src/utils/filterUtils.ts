@@ -1,8 +1,8 @@
 import { Conference, FilterState } from '../types';
 
 export const filterConferences = (
-  conferences: Conference[],
-  filters: FilterState
+    conferences: Conference[],
+    filters: FilterState
 ): Conference[] => {
   return conferences.filter((conference) => {
     // Filter by categories and subcategories
@@ -31,7 +31,7 @@ export const filterConferences = (
     }
 
     // Filter for upcoming deadlines if selected
-    if (filters.upcoming && new Date(conference.deadline) < new Date()) {
+    if (filters.upcoming && conference.deadline !== 'Rolling' && new Date(conference.deadline) < new Date()) {
       return false;
     }
 
@@ -41,10 +41,10 @@ export const filterConferences = (
       const matchesName = conference.name.toLowerCase().includes(searchLower);
       const matchesAcronym = conference.acronym.toLowerCase().includes(searchLower);
       const matchesLocation = conference.location?.toLowerCase().includes(searchLower) || false;
-      const matchesAreas = Array.isArray(conference.areas) && conference.areas.some(area => 
-        area.toLowerCase().includes(searchLower)
+      const matchesAreas = Array.isArray(conference.areas) && conference.areas.some(area =>
+          area.toLowerCase().includes(searchLower)
       );
-      
+
       if (!matchesName && !matchesAcronym && !matchesLocation && !matchesAreas) {
         return false;
       }
@@ -54,21 +54,33 @@ export const filterConferences = (
   });
 };
 
+export const getSubmissionsBySubcategory = (conferences: Conference[], subcategoryId: string): Conference[] => {
+  return conferences.filter(submission =>
+      submission.subcategories && submission.subcategories.includes(subcategoryId)
+  );
+};
+
+export const getSubmissionsByCategory = (conferences: Conference[], categoryId: string): Conference[] => {
+  return conferences.filter(submission =>
+      submission.categories && submission.categories.includes(categoryId)
+  );
+};
+
 export const extractLocations = (conferences: Conference[]): string[] => {
   const locationSet = new Set<string>();
-  
+
   conferences.forEach(conference => {
     if (conference.location) {
       locationSet.add(conference.location);
     }
   });
-  
+
   return Array.from(locationSet).sort();
 };
 
 export const extractAreas = (conferences: Conference[]): string[] => {
   const areaSet = new Set<string>();
-  
+
   conferences.forEach(conference => {
     if (Array.isArray(conference.areas)) {
       conference.areas.forEach(area => {
@@ -76,6 +88,6 @@ export const extractAreas = (conferences: Conference[]): string[] => {
       });
     }
   });
-  
+
   return Array.from(areaSet).sort();
 };
