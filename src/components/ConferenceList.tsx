@@ -4,7 +4,7 @@ import ConferenceCard from './ConferenceCard';
 import { Conference, AreaData, SortField } from '../types';
 import { filterConferences } from '../utils/filterUtils';
 import { FilterState } from '../types';
-import { SearchX, Filter, RefreshCw, Coffee, Brain, Dices, Lightbulb, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Clock, X } from 'lucide-react';
+import { SearchX, Filter, RefreshCw, Coffee, Brain, Dices, Lightbulb, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Clock, X, Star } from 'lucide-react';
 
 interface ConferenceListProps {
   areasData: AreaData[];
@@ -71,7 +71,7 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
     });
 
     return combined;
-  }, [areasData]);
+  }, [areasData, selectedConference]);
 
   // Effect to handle filtering and sorting
   useEffect(() => {
@@ -80,84 +80,85 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
     const timer = setTimeout(() => {
       let processedSubmissions: Conference[];
 
-      // If there's a selected conference, only show that one
+      // If there's a selected conference, handle it specially
       if (selectedConference) {
-        processedSubmissions = allSubmissions.filter(sub => sub.id === selectedConference);
+        const selectedSubmission = allSubmissions.find(sub => sub.id === selectedConference);
+        const otherSubmissions = allSubmissions.filter(sub => sub.id !== selectedConference);
+
+        if (selectedSubmission) {
+          // Apply filters to other submissions
+          const filteredOthers = filterConferences(otherSubmissions, filters);
+
+          // Put selected submission first, then filtered others
+          processedSubmissions = [selectedSubmission, ...filteredOthers];
+        } else {
+          // Selected conference not found, proceed normally
+          processedSubmissions = filterConferences(allSubmissions, filters);
+        }
       } else {
         // Apply filters to the combined list
         processedSubmissions = filterConferences(allSubmissions, filters);
       }
 
-      // Sort submissions - ensure proper date comparison
-      const sortedSubmissions = [...processedSubmissions].sort((a, b) => {
-        const { sortField, sortOrder } = filters;
-        const multiplier = sortOrder === 'asc' ? 1 : -1;
+      // Sort submissions only if no conference is selected (selected one should stay at top)
+      if (!selectedConference) {
+        const sortedSubmissions = [...processedSubmissions].sort((a, b) => {
+          const { sortField, sortOrder } = filters;
+          const multiplier = sortOrder === 'asc' ? 1 : -1;
 
-        switch (sortField) {
-          case 'name':
-            return multiplier * a.acronym.localeCompare(b.acronym);
+          switch (sortField) {
+            case 'name':
+              return multiplier * a.acronym.localeCompare(b.acronym);
 
-          case 'location':
-            // Handle empty/missing locations - show them first for ascending order
-            const locationA = a.location || '';
-            const locationB = b.location || '';
+            case 'location':
+              // Handle empty/missing locations - show them first for ascending order
+              const locationA = a.location || '';
+              const locationB = b.location || '';
 
-            // If one location is empty and the other isn't
-            if (!locationA && locationB) return -1; // Empty location comes first
-            if (locationA && !locationB) return 1;  // Non-empty location comes second
+              // If one location is empty and the other isn't
+              if (!locationA && locationB) return -1; // Empty location comes first
+              if (locationA && !locationB) return 1;  // Non-empty location comes second
 
-            // If both are empty or both have values, sort normally
-            return multiplier * locationA.localeCompare(locationB);
+              // If both are empty or both have values, sort normally
+              return multiplier * locationA.localeCompare(locationB);
 
-          case 'rank':
-            const rankOrder = { 'A*': 4, 'A': 3, 'B': 2, 'C': 1 };
-            const rankA = rankOrder[a.ranking || 'C'] || 0;
-            const rankB = rankOrder[b.ranking || 'C'] || 0;
-            return multiplier * (rankB - rankA);
+            case 'rank':
+              const rankOrder = { 'A*': 4, 'A': 3, 'B': 2, 'C': 1 };
+              const rankA = rankOrder[a.ranking || 'C'] || 0;
+              const rankB = rankOrder[b.ranking || 'C'] || 0;
+              return multiplier * (rankB - rankA);
 
-          case 'deadline':
-          default:
-            // Handle "Rolling" deadlines - put them at the end for ascending, beginning for descending
-            if (a.deadline === 'Rolling' && b.deadline === 'Rolling') return 0;
-            if (a.deadline === 'Rolling') return multiplier > 0 ? 1 : -1;
-            if (b.deadline === 'Rolling') return multiplier > 0 ? -1 : 1;
+            case 'deadline':
+            default:
+              // Handle "Rolling" deadlines - put them at the end for ascending, beginning for descending
+              if (a.deadline === 'Rolling' && b.deadline === 'Rolling') return 0;
+              if (a.deadline === 'Rolling') return multiplier > 0 ? 1 : -1;
+              if (b.deadline === 'Rolling') return multiplier > 0 ? -1 : 1;
 
-            // Parse dates properly
-            try {
-              const dateA = new Date(a.deadline);
-              const dateB = new Date(b.deadline);
+              // Parse dates properly
+              try {
+                const dateA = new Date(a.deadline);
+                const dateB = new Date(b.deadline);
 
-              // Check if dates are valid
-              if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-                // If one date is invalid, put it at the end
-                if (isNaN(dateA.getTime()) && isNaN(dateB.getTime())) return 0;
-                if (isNaN(dateA.getTime())) return 1;
-                if (isNaN(dateB.getTime())) return -1;
+                // Check if dates are valid
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+                  // If one date is invalid, put it at the end
+                  if (isNaN(dateA.getTime()) && isNaN(dateB.getTime())) return 0;
+                  if (isNaN(dateA.getTime())) return 1;
+                  if (isNaN(dateB.getTime())) return -1;
+                }
+
+                return multiplier * (dateA.getTime() - dateB.getTime());
+              } catch (error) {
+                return 0;
               }
+          }
+        });
 
-              return multiplier * (dateA.getTime() - dateB.getTime());
-            } catch (error) {
-              console.error('Error parsing dates:', { a: a.deadline, b: b.deadline, error });
-              return 0;
-            }
-        }
-      });
+        processedSubmissions = sortedSubmissions;
+      }
 
-      // Debug logging
-      console.log(`Total submissions: ${allSubmissions.length}`);
-      console.log(`Filtered submissions: ${processedSubmissions.length}`);
-      console.log(`Final sorted submissions: ${sortedSubmissions.length}`);
-
-      // Show first 10 with detailed info
-      console.log('First 10 sorted by deadline:', sortedSubmissions.slice(0, 10).map(s => ({
-        acronym: s.acronym,
-        deadline: s.deadline,
-        parsedDate: s.deadline !== 'Rolling' ? (isNaN(new Date(s.deadline).getTime()) ? 'Invalid Date' : new Date(s.deadline).toISOString()) : 'Rolling',
-        category: s.categories?.[0] || 'unknown',
-        daysFromNow: s.deadline !== 'Rolling' ? (isNaN(new Date(s.deadline).getTime()) ? 'Invalid Date' : Math.ceil((new Date(s.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : 'Rolling'
-      })));
-
-      setSubmissions(sortedSubmissions);
+      setSubmissions(processedSubmissions);
       setIsLoading(false);
     }, 100); // Reduced timeout for faster response
 
@@ -266,6 +267,7 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
       {/* Content */}
       <div className="relative p-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* View Toggle */}
           <div className="flex items-center gap-2 rounded-lg bg-white/40 p-1">
             {[
               { field: 'deadline', label: 'Deadline' },
@@ -278,22 +280,26 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleSort(field as SortField)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium
+                disabled={!!selectedConference} // Disable sorting when conference is selected
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium
                        transition-all duration-200 ${
-                  filters.sortField === field
+                  filters.sortField === field && !selectedConference
                     ? 'bg-primary-500 text-white'
+                    : selectedConference
+                    ? 'text-gray-400 cursor-not-allowed'
                     : 'text-gray-600 hover:bg-white'
                 }`}
               >
                 {label}
                 <ArrowUpDown className={`w-4 h-4 transition-transform duration-200 ${
-                  filters.sortField === field && filters.sortOrder === 'desc' ? 'rotate-180' : ''
+                  filters.sortField === field && filters.sortOrder === 'desc' && !selectedConference ? 'rotate-180' : ''
                 }`} />
               </motion.button>
             ))}
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Clear Selection Button */}
             {selectedConference && (
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -441,7 +447,7 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Clock className="h-4 w-4" />
+                    <Clock className="w-4 h-4" />
                     <span>Show Past Deadlines</span>
                   </motion.button>
                 )}
@@ -465,25 +471,55 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
         ) : (
           <div className="space-y-3">
             <AnimatePresence mode="popLayout">
-              {paginatedSubmissions.map((submission) => (
-                <motion.div
-                  key={submission.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{
-                    opacity: { duration: 0.2 },
-                    scale: { duration: 0.3 },
-                    layout: { duration: 0.3 }
-                  }}
-                >
-                  <ConferenceCard
-                    conference={submission}
-                    areaColor={submission.areaColor}
-                  />
-                </motion.div>
-              ))}
+              {paginatedSubmissions.map((submission, index) => {
+                const isSelected = selectedConference === submission.id;
+
+                return (
+                  <motion.div
+                    key={submission.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{
+                      opacity: { duration: 0.2 },
+                      scale: { duration: 0.3 },
+                      layout: { duration: 0.3 }
+                    }}
+                    className={`relative ${isSelected ? 'z-10' : ''}`}
+                  >
+                    {/* Selected Conference Special Background */}
+                    {isSelected && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary-50 via-primary-100/30 to-primary-50
+                                    rounded-xl blur-sm -z-10 transform scale-105" />
+                    )}
+
+                    {/* Selected Badge */}
+                    {isSelected && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8, y: -10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        className="absolute -top-2 -right-2 z-20"
+                      >
+                        <div className="flex items-center gap-1 px-2 py-1 rounded-full
+                                      bg-gradient-to-r from-primary-500 to-primary-600
+                                      text-white text-xs font-medium shadow-lg">
+                          <Star className="w-3 h-3 fill-current" />
+                          <span>Selected</span>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    <div className={`${isSelected ? 'ring-2 ring-primary-500 ring-offset-2' : ''}`}>
+                      <ConferenceCard
+                        conference={submission}
+                        areaColor={submission.areaColor}
+                        isSelected={isSelected}
+                      />
+                    </div>
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
           </div>
         )}

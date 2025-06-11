@@ -8,9 +8,10 @@ import * as Tooltip from '@radix-ui/react-tooltip';
 interface ConferenceCardProps {
   conference: Conference;
   areaColor: string;
+  isSelected?: boolean;
 }
 
-const ConferenceCard: React.FC<ConferenceCardProps> = ({ conference, areaColor }) => {
+const ConferenceCard: React.FC<ConferenceCardProps> = ({ conference, areaColor, isSelected = false }) => {
   const [countdown, setCountdown] = useState(formatDeadline(conference.deadline));
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false);
   const [showShareDropdown, setShowShareDropdown] = useState(false);
@@ -152,35 +153,52 @@ END:VCALENDAR`;
 
   return (
       <motion.div
-          className="group relative flex flex-col sm:flex-row sm:items-start gap-3 p-4
-                 rounded-xl border border-gray-200
-                 shadow-[0_2px_8px_rgba(0,0,0,0.08)]
-                 hover:shadow-[0_4px_16px_rgba(0,0,0,0.16)]
-                 transition-all duration-300 ease-out
-                 hover:scale-[1.01]"
+          className={`group relative flex flex-col sm:flex-row sm:items-start gap-3 p-4
+                 rounded-xl border transition-all duration-300 ease-out
+                 hover:scale-[1.01] ${
+                   isSelected 
+                     ? 'border-primary-300 bg-gradient-to-br from-primary-50/80 to-white shadow-lg shadow-primary-500/20' 
+                     : 'border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.16)]'
+                 }`}
           style={{
             borderLeftWidth: '4px',
-            borderLeftColor: getStatusColor()
+            borderLeftColor: isSelected ? '#0c87eb' : getStatusColor()
           }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
       >
         {/* Decorative Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white to-gray-50/80" />
+        <div className={`absolute inset-0 ${
+          isSelected 
+            ? 'bg-gradient-to-br from-primary-50/60 to-white' 
+            : 'bg-gradient-to-br from-white to-gray-50/80'
+        }`} />
 
         {/* Network Pattern Background */}
-        <div className="absolute inset-0 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-300">
+        <div className={`absolute inset-0 transition-opacity duration-300 ${
+          isSelected 
+            ? 'opacity-[0.08] group-hover:opacity-[0.12]' 
+            : 'opacity-[0.03] group-hover:opacity-[0.05]'
+        }`}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#000_1px,transparent_1px)] bg-[length:20px_20px]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#000_1px,transparent_1px)] bg-[length:30px_30px] rotate-15" />
         </div>
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className={`absolute inset-0 transition-opacity duration-300 ${
+          isSelected 
+            ? 'bg-gradient-to-br from-primary-100/20 via-white/10 to-primary-50/20 opacity-100' 
+            : 'bg-gradient-to-br from-transparent via-white/5 to-white/10 opacity-0 group-hover:opacity-100'
+        }`} />
 
         {/* Content */}
         <div className="relative flex-shrink-0 w-full sm:w-48">
-          <h3 className="text-lg font-mono font-bold tracking-tight text-gray-900 group-hover:text-primary-600 transition-colors duration-300">
+          <h3 className={`text-lg font-mono font-bold tracking-tight transition-colors duration-300 ${
+            isSelected 
+              ? 'text-primary-700' 
+              : 'text-gray-900 group-hover:text-primary-600'
+          }`}>
             {conference.acronym}
           </h3>
 
@@ -221,7 +239,11 @@ END:VCALENDAR`;
         </div>
 
         <div className="relative flex-1 min-w-0 pl-0 sm:pl-2">
-          <h4 className="text-sm font-medium text-gray-600 mb-1.5 group-hover:text-gray-900 transition-colors duration-300">
+          <h4 className={`text-sm font-medium mb-1.5 transition-colors duration-300 ${
+            isSelected 
+              ? 'text-gray-800' 
+              : 'text-gray-600 group-hover:text-gray-900'
+          }`}>
             {conference.name}
           </h4>
 

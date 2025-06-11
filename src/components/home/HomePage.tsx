@@ -62,7 +62,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                             areasData={areasData}
                                             filters={filters}
                                             setFilters={setFilters}
-                                            selectedCon
+                                            selectedConference={selectedConference}
                                             onClearSelection={onClearSelection}
                                         />
                                     </div>

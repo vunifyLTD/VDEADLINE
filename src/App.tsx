@@ -25,6 +25,8 @@ import { categories } from './data/categories';
 function App() {
   const [isUnlocked, setIsUnlocked] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Get the selected conference from URL parameters
   const selectedConference = searchParams.get('conference');
 
   // Combine all data by type
@@ -87,6 +89,15 @@ function App() {
     journals: area.journals || []
   }));
 
+  // Function to clear the selected conference
+  const handleClearSelection = () => {
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.delete('conference');
+      return newParams;
+    });
+  };
+
   if (!isUnlocked) {
     return <ComingSoon onUnlock={() => setIsUnlocked(true)} />;
   }
@@ -101,7 +112,7 @@ function App() {
             filters={filters}
             setFilters={setFilters}
             selectedConference={selectedConference}
-            onClearSelection={() => setSearchParams({})}
+            onClearSelection={handleClearSelection}
         />
         <Footer />
       </div>
